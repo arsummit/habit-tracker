@@ -84,10 +84,22 @@ function NumpadSheet({ value, onChange, onClose }: {
   onChange: (v: string) => void;
   onClose: () => void;
 }) {
+  const fresh = useRef(true);
+
   const press = (key: string) => {
     if (key === '✓') { onClose(); return; }
-    if (key === 'AC') { onChange('0'); return; }
-    if (key === '⌫') { onChange(value.length <= 1 ? '0' : value.slice(0, -1)); return; }
+    if (key === 'AC') { fresh.current = true; onChange('0'); return; }
+    if (key === '⌫') {
+      fresh.current = false;
+      onChange(value.length <= 1 ? '0' : value.slice(0, -1));
+      return;
+    }
+    if (fresh.current) {
+      fresh.current = false;
+      if (key === '.') { onChange('0.'); return; }
+      onChange(key);
+      return;
+    }
     if (key === '.' && value.includes('.')) return;
     const next = value === '0' && key !== '.' ? key : value + key;
     if (next.length <= 8) onChange(next);
